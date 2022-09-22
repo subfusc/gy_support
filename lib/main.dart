@@ -47,10 +47,10 @@ class _GySupportState extends State<GySupport> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Gyldendal Support',
+      title: 'TiBet Support',
       theme: ThemeData(
           primarySwatch: Colors.red, brightness: darkMode ? Brightness.dark : Brightness.light),
-      home: MyHomePage(title: 'Gyldendal Support', togFunc: turnOnDark),
+      home: MyHomePage(title: 'TiBet Support', togFunc: turnOnDark),
     );
   }
 }
@@ -68,6 +68,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final List<String> devs = ['Morten', 'Eivind', 'Christian', 'Sindre'];
   bool darkMode = false;
+  bool showList = false;
 
   @override
   Widget build(BuildContext context) {
@@ -83,12 +84,20 @@ class _MyHomePageState extends State<MyHomePage> {
                   widget.togFunc(v);
                 })
           ]),
+          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+            const Text('Eivind Mode: ', style: TextStyle(fontWeight: FontWeight.bold)),
+            Switch(value: showList, onChanged: (v) => setState(() => showList = v)),
+          ]),
           Expanded(
-              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Text('Support denne uken: ', style: TextStyle(fontSize: 20)),
-            Text(devs[weekNumber(DateTime.now()) % devs.length],
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          ])),
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Text('Support denne uken: ', style: TextStyle(fontSize: 20)),
+                Text(devs[weekNumber(DateTime.now()) % devs.length],
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              ]),
+              (showList ? Text('Rekkefølge: ${devs.toString()}') : const Text('')),
+            ]),
+          )
         ]),
         floatingActionButton: FloatingActionButton.extended(
             icon: const Icon(Icons.warning),
