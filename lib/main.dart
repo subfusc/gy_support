@@ -1,6 +1,10 @@
+
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
+import 'dart:html';
 
 /// WOOO, STACK OVERFLOW.
 /// Thanks to András Szepesházi: https://stackoverflow.com/questions/49393231/how-to-get-day-of-year-week-of-year-from-a-datetime-dart-object
@@ -35,9 +39,10 @@ class GySupport extends StatefulWidget {
 }
 
 class _GySupportState extends State<GySupport> {
-  bool darkMode = false;
+  bool darkMode = jsonDecode(window.localStorage['dark'] ?? 'false') as bool;
 
   void turnOnDark(bool v) {
+    window.localStorage['dark'] = jsonEncode(v);
     setState(() {
       darkMode = v;
     });
@@ -66,47 +71,109 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  static bool get darkModeFromStorage => jsonDecode(window.localStorage['dark'] ?? 'false') as bool;
+  static bool get showListFromStorage => jsonDecode(window.localStorage['list'] ?? 'false') as bool;
+
   final List<String> devs = ['Morten', 'Eivind', 'Christian', 'Sindre'];
-  bool darkMode = false;
-  bool showList = false;
+
+  bool darkMode = darkModeFromStorage;
+  bool showList = showListFromStorage;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
-        body: Column(mainAxisSize: MainAxisSize.max, children: [
-          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            const Text('Important: ', style: TextStyle(fontWeight: FontWeight.bold)),
-            Switch(
-                value: darkMode,
-                onChanged: (v) {
-                  darkMode = v;
-                  widget.togFunc(v);
-                })
-          ]),
-          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            const Text('Eivind Mode: ', style: TextStyle(fontWeight: FontWeight.bold)),
-            Switch(value: showList, onChanged: (v) => setState(() => showList = v)),
-          ]),
-          Expanded(
-            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                const Text('Support denne uken: ', style: TextStyle(fontSize: 20)),
-                Text(devs[weekNumber(DateTime.now()) % devs.length],
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+      appBar: AppBar(title: Text(widget.title)),
+      body: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  const Text('Dark Mode: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Switch(
+                    value: darkMode,
+                    onChanged: (v) {
+                      darkMode = v;
+                      widget.togFunc(v);
+                  })
               ]),
-              (showList ? Text('Rekkefølge: ${devs.toString()}') : const Text('')),
-            ]),
-          )
-        ]),
-        floatingActionButton: FloatingActionButton.extended(
-            icon: const Icon(Icons.warning),
-            label: const Text('Trenger en utvikler til møte'),
-            onPressed: () {
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content:
-                      Text('Den heldige utvalgte er: ${devs[Random().nextInt(devs.length)]}')));
-            }));
+              Row(mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Text('Eivind Mode: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Switch(value: showList,
+                    onChanged: (v) => setState( () {window.localStorage['list'] = jsonEncode(v); showList = v;})),
+                ]
+              )
+            ]
+          ),
+           Expanded(
+             child: Column(
+               mainAxisAlignment: MainAxisAlignment.center,
+               crossAxisAlignment: CrossAxisAlignment.center,
+               children: [
+                 Row(
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+                     const Text('Support denne uken: ', style: TextStyle(fontSize: 20)),
+                     Text(devs[weekNumber(DateTime.now()) % devs.length],
+                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                   ]
+                 ),
+                 (showList ? Text('Rekkefølge: ${devs.toString()}') : const Text('')),
+           ])),
+       ]),
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.warning),
+        label: const Text('Trenger en utvikler til møte'),
+        onPressed: () {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Den heldige utvalgte er: ${devs[Random().nextInt(devs.length)]}')));
+    }));
+  }
+}
+
+class WebStorage {
+  final Storage backend;
+
+  WebStorage({required this.backend});
+
+  String yrMnt(DateTime d) => "${d.year}-${d.month}";
+
+  Map<String,List<int>> stampsForMonth(DateTime d) {
+    if (backend[yrMnt(d)] == null) return <String,List<int>>{};
+    var rval = <String,List<int>>{};
+    var dmap = Map<String,List<dynamic>>.from(jsonDecode(backend[yrMnt(d)]!));
+    for (var val in dmap.keys) { rval[val] = List<int>.from(dmap[val]!); }
+    return rval;
+  }
+
+  void saveStampsForMonth(DateTime d, Map<String,List<int>> stamps) {
+    backend[yrMnt(d)] = jsonEncode(stamps);
+  }
+}
+
+class VariableText extends StatefulWidget {
+  final String initialText;
+
+  const VariableText({super.key, required this.initialText});
+
+  @override
+  State<VariableText> createState() => _VariableTextState();
+}
+
+class _VariableTextState extends State<VariableText> {
+  String? text;
+
+  void trigger(String txt) {
+    setState(() {
+        text = txt;
+    });
+  }
+
+  @override
+  Widget build(ctx) {
+    text ??= widget.initialText;
+    return Text(text!);
   }
 }
