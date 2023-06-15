@@ -74,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
   static bool get darkModeFromStorage => jsonDecode(window.localStorage['dark'] ?? 'false') as bool;
   static bool get showListFromStorage => jsonDecode(window.localStorage['list'] ?? 'false') as bool;
 
-  final List<String> devs = ['Morten', 'Eivind', 'Christian', 'Sindre'];
+  final List<String> devs = ['HC', 'Eivind', 'Christian', 'Sindre'];
 
   bool darkMode = darkModeFromStorage;
   bool showList = showListFromStorage;
