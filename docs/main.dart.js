@@ -53310,7 +53310,7 @@ A.WU.prototype={
 $0(){this.a.d=this.b},
 $S:0}
 A.qh.prototype={
-aq(){var s,r=A.a(["Morten","Eivind","Christian","Sindre"],t.s),q=window.localStorage.getItem("dark")
+aq(){var s,r=A.a(["HC","Eivind","Christian","Sindre"],t.s),q=window.localStorage.getItem("dark")
 q=A.hc(B.a1.oM(0,q==null?"false":q,null))
 s=window.localStorage.getItem("list")
 return new A.FE(r,q,A.hc(B.a1.oM(0,s==null?"false":s,null)),B.m)},
